@@ -27,11 +27,24 @@ commands:
         msg="$*"
         [ -z "$msg" ] && msg="Happy Whaleness Day"
         exec perl "$HOME/.whalesay/cowsay" -f docker "$msg"
-  startup:
-    # Best-effort friendly greeting in the sandbox startup log.
-    - command: ["sh", "-c", "/home/agent/.local/bin/whalesay 'Happy Whaleness Day!' 2>/dev/null || true"]
+    - path: /home/agent/.whalesay/greet.sh
+      mode: "0644"
+      description: "Sourced from ~/.bashrc to greet with the Docker whale on entry."
+      content: |
+        # Greet with the Docker whale on interactive shells (whalesay kit).
+        case $- in
+          *i*) command -v whalesay >/dev/null 2>&1 && whalesay "Happy Whaleness Day" ;;
+        esac
+  install:
+    # The kit's "entrypoint": wire the greeting into ~/.bashrc so the whale
+    # appears the moment you enter the sandbox - no need to type `whalesay`.
+    # Idempotent (grep guard) and interactive-only (the *i* guard in greet.sh),
+    # so scripted `sbx exec ... whalesay` calls are never double-greeted.
+    - command: >-
+        grep -qF '.whalesay/greet.sh' "$HOME/.bashrc" 2>/dev/null ||
+        printf '\n# Docker whale greeting (whalesay kit)\n. "$HOME/.whalesay/greet.sh"\n' >> "$HOME/.bashrc"
       user: "1000"
-      description: "Greet with the Docker whale on sandbox start (best-effort)"
+      description: "Greet with the Docker whale on every interactive shell (the kit's entrypoint)"
 
 memory: |
   ## Whalesay 🐳

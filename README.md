@@ -47,7 +47,17 @@ most on-brand distribution: it lands on Docker Hub *and* stays in sbx-land.
 
 ```console
 $ sbx run --kit docker.io/ajeetraina777/sbx-whalesay-kits:latest shell
-# then, inside the sandbox:
+ _____________________
+< Happy Whaleness Day >
+ ---------------------
+    \   ## ## ##  ...  🐳   ← greets you the moment you enter
+```
+
+The whale greets you **automatically on entry** — the kit wires a greeting into
+the sandbox's `~/.bashrc` (its "entrypoint"), so you don't have to type anything.
+Want to say something specific? The `whalesay` command is on `PATH`:
+
+```console
 $ whalesay "hello from a kit"
 ```
 
