@@ -1,13 +1,7 @@
-# whalesay 🐳 - the Docker Sandboxes edition
+# Happy Whaleness Day
 
 This is a spin on the classic [`docker/whalesay`](https://hub.docker.com/r/docker/whalesay)
-demo — the whale that talks with [cowsay](https://en.wikipedia.org/wiki/Cowsay).
-
-The original runs in a container:
-
-```console
-$ docker run docker/whalesay cowsay boo
-```
+demo, the whale that talks with [cowsay](https://en.wikipedia.org/wiki/Cowsay).
 
 This version runs the very same whale, but from inside an **isolated Docker
 Sandbox** created with [`sbx`](https://docs.docker.com/ai/sandboxes/) instead of a
