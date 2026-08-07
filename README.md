@@ -1,5 +1,7 @@
 # Happy Whaleness Day
 
+[![Publish whalesay image](https://github.com/ajeetraina/docker-whaleness-day/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/ajeetraina/docker-whaleness-day/actions/workflows/docker-publish.yml)
+
 This is a spin on the classic [`docker/whalesay`](https://hub.docker.com/r/docker/whalesay)
 demo, the whale that talks with [cowsay](https://en.wikipedia.org/wiki/Cowsay).
 
@@ -24,6 +26,18 @@ $ ./whalesay.sh boo
          \    \         __/
           \____\_______/
 ```
+
+## Or just pull the image
+
+The classic image is published to Docker Hub by CI on every push to `main`
+(see [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml)),
+built for both `linux/amd64` and `linux/arm64`:
+
+```console
+$ docker run --rm ajeetraina777/whaleness-day boo
+```
+
+No message? The whale wishes you a Happy Whaleness Day by default.
 
 ## Why sbx instead of `docker run`?
 
