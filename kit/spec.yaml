@@ -1,0 +1,42 @@
+schemaVersion: "1"
+kind: mixin
+name: whalesay
+displayName: Whalesay 🐳
+description: "Drops the Docker whale (cowsay) into any sandbox. Run `whalesay \"hello\"` to make the whale talk. Unlike most kits it needs no secret, no network and no install - perl already ships in the sandbox image, so the whale works fully offline."
+sourceURL: https://github.com/ajeetraina/docker-whaleness-day
+
+# No `network:` block: the whale is entirely local, so the kit needs zero egress.
+# No secret either - contrast with e.g. an openai/mem0 kit that wants
+# `sbx secret set openai` first; here there is nothing to authenticate.
+
+environment:
+  variables:
+    # cowsay resolves `-f docker` against COWPATH; that's where files/ dropped it.
+    COWPATH: "/home/agent/.whalesay/cows"
+    # Put the whalesay wrapper (created by initFiles below) on PATH.
+    PATH: "/home/agent/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+commands:
+  initFiles:
+    - path: /home/agent/.local/bin/whalesay
+      mode: "0755"
+      description: "The `whalesay` command: cowsay wearing the Docker whale."
+      content: |
+        #!/usr/bin/env sh
+        # whalesay - make the Docker whale talk.
+        msg="$*"
+        [ -z "$msg" ] && msg="Happy Whaleness Day"
+        exec perl "$HOME/.whalesay/cowsay" -f docker "$msg"
+  startup:
+    # Best-effort friendly greeting in the sandbox startup log.
+    - command: ["sh", "-c", "/home/agent/.local/bin/whalesay 'Happy Whaleness Day!' 2>/dev/null || true"]
+      user: "1000"
+      description: "Greet with the Docker whale on sandbox start (best-effort)"
+
+memory: |
+  ## Whalesay 🐳
+
+  The Docker whale is installed in this sandbox. Run `whalesay "your message"`
+  to make the whale say something - it's `cowsay` using the Docker whale as the
+  default cow. Files live under `~/.whalesay`; the wrapper is on PATH at
+  `~/.local/bin/whalesay`. No key or network needed.

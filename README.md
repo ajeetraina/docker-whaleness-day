@@ -39,6 +39,26 @@ $ docker run --rm ajeetraina777/whaleness-day boo
 
 No message? The whale wishes you a Happy Whaleness Day by default.
 
+## Or add it as an sbx kit (the sbx-native way)
+
+The whale is also published to Docker Hub as an [sbx **kit**](https://docs.docker.com/ai/sandboxes/) —
+an OCI artifact that drops a `whalesay` command into any sandbox. This is the
+most on-brand distribution: it lands on Docker Hub *and* stays in sbx-land.
+
+```console
+$ sbx run --kit docker.io/ajeetraina777/sbx-whalesay-kits:latest shell
+# then, inside the sandbox:
+$ whalesay "hello from a kit"
+```
+
+Attach it to an AI agent just as easily — `... sbx-whalesay-kits:latest claude`.
+
+Unlike a kit that wraps an authenticated service (where you'd first run something
+like `sbx secret set openai`), this kit needs **no secret, no network, and no
+install** — `perl` already ships in the sandbox image, so the whale is fully
+offline. Re-push it after changes with [`scripts/push-kit.sh`](scripts/push-kit.sh)
+(needs `docker login`).
+
 ## Why sbx instead of `docker run`?
 
 [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) (`sbx`) create isolated,
@@ -109,6 +129,9 @@ $ sbx run --name whalesay
 | `whalesay.sh` | wrapper that drives `sbx` and makes the whale talk  |
 | `cowsay`      | the original cowsay perl script                     |
 | `docker.cow`  | the Docker whale ASCII art, as a cowsay cowfile     |
+| `Dockerfile`  | builds the classic image published to Docker Hub    |
+| `kit/`        | the sbx kit (`spec.yaml` + files) pushed to Docker Hub |
+| `scripts/`    | `push-kit.sh` to (re)publish the kit                |
 
 ## Credits
 
