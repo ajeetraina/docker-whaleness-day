@@ -1,4 +1,4 @@
-# whalesay 🐳 — the Docker Sandboxes edition
+# whalesay 🐳 - the Docker Sandboxes edition
 
 This is a spin on the classic [`docker/whalesay`](https://hub.docker.com/r/docker/whalesay)
 demo — the whale that talks with [cowsay](https://en.wikipedia.org/wiki/Cowsay).
