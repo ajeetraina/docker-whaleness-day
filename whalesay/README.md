@@ -28,16 +28,40 @@ mixin — a single OCI image built with `docker buildx`. The descriptor lives in
 [`whalesay.yaml`](whalesay.yaml), the overlay recipe in
 [`whalesay.dockerfile`](whalesay.dockerfile).
 
-```console
-# run it straight from source, composed onto the shell workload — no push needed
-$ sbx run ./shell --kit ./whalesay .
+As a mixin the kit has no entrypoint of its own — it layers onto a **v3
+workload** (the base agent's launch command stays, and you run `whalesay` from
+the shell). A mixin cannot run alone.
 
-# or build + publish the OCI kit image (see ../scripts/push-kit.sh)
-$ docker buildx build ./whalesay -f ./whalesay/whalesay.yaml \
-    -t docker.io/ajeetraina777/sbx-whalesay-kits:latest --push
+### Run locally (from source — no push needed)
+
+```console
+# compose onto any local v3 workload kit (a plain shell workload shown here)
+$ sbx run ./path/to/shell-workload --kit ./whalesay .
+$ whalesay "hello from a kit"
 ```
 
-As a mixin the kit has no entrypoint of its own: the base workload's launch
-command stays, and you run `whalesay` from the shell.
+### Run in the cloud
+
+Cloud sandboxes resolve kits from a **registry**, so both the workload and the
+mixin must be published OCI references (a local `./whalesay` path won't do), and
+the workload must itself be a **v3** kit — the cloud built-in `shell`/`claude`
+agents are v1/v2 and will not compose with a v3 mixin.
+
+```console
+# build + publish the kit (see ../scripts/push-kit.sh)
+$ docker buildx build ./whalesay -f ./whalesay/whalesay.yaml \
+    --platform linux/amd64,linux/arm64 --push \
+    -t docker.io/ajeetraina777/sbx-whalesay-kits:latest
+
+# launch a cloud sandbox: a published v3 shell workload + the published mixin
+$ sbx --cloud run --detach --name whalecloud \
+    docker.io/ajeetraina777/sbx-shellbase:latest \
+    --kit docker.io/ajeetraina777/sbx-whalesay-kits:latest
+$ sbx --cloud exec whalecloud whalesay "hello from the cloud"
+$ sbx --cloud rm -f whalecloud          # tidy up when done
+```
+
+> `sbx-shellbase` is just a minimal `kind: workload` kit on the `shell-docker`
+> template, published so the mixin has a v3 base to layer onto in the cloud.
 
 Source & the full story: https://github.com/ajeetraina/docker-whaleness-day
