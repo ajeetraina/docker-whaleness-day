@@ -1,0 +1,78 @@
+# syntax=docker/sandbox-kit:3
+# The classic docker/whalesay whale (cowsay) as a MIXIN: layer it onto any
+# shell or agent base and you get a `whalesay` command plus a whale greeting
+# on every interactive shell. There is no ENTRYPOINT — the base workload's
+# launch command stays, and you run `whalesay` from the shell.
+#
+# Unlike most kits this one needs no secret, no network and no install: the
+# whale is static content baked into the overlay, and perl already ships in
+# the sandbox base, so it works fully offline. (Contrast a service kit like
+# openai/mem0 that wants `sbx secret set openai` first; here there is nothing
+# to authenticate and no egress to grant.)
+schemaVersion: "3"
+displayName: Whalesay 🐳
+author: "Ajeet Singh Raina <ajeetraina@gmail.com>"
+description: >-
+  Drops the Docker whale (cowsay) into any sandbox. Run `whalesay "hello"`
+  to make the whale talk; it also greets you on entry. Needs no secret, no
+  network and no install — perl already ships in the sandbox base, so the
+  whale works fully offline.
+sourceUrl: https://github.com/ajeetraina/docker-whaleness-day
+
+# MIGRATION NOTE: v2 declared neither `version` nor `licenses`, and nothing
+# fails without them — but the published artifact is what loses, so both are
+# added here. `version` names the kit's own packaging; `licenses` reflects the
+# bundled cowsay 3.03 (© Tony Monroe), distributed under the same terms as Perl.
+version: "1.0.0"
+licenses: ["Artistic-1.0-Perl OR GPL-1.0-or-later"]
+
+kind: mixin
+
+# The `whalesay` command this kit installs. Unversioned provides are refused
+# at publish, so it is pinned to the kit's own version (cowsay itself is 3.03,
+# but the wrapper and packaging are the kit's).
+provides: ["whalesay@1.0.0"]
+
+# MIGRATION NOTE: the whale runs `perl`, which is NOT part of the platform
+# floor (§12 guarantees only bash, sh, curl, git, a CA store and the agent
+# user). v2 relied — silently, as v2 had no way to say otherwise — on perl
+# already being present on the composed base, which the sbx template images
+# carry. A hard `requires: ["deb/perl"]` is deliberately NOT declared: it
+# would refuse to compose on any base where perl is present but not under that
+# exact derived-provide name (installed from source, a tilde upstream version,
+# or an arch mismatch), turning a working offline whale into a composition
+# failure everywhere. If you target only apt-based workloads, add
+# `requires: ["deb/perl"]` once you have verified the name with
+# `dpkg-query -W perl` on each published arch.
+
+capabilities:
+  # No network-policy@1: the whale is entirely local — zero egress.
+  # No credential@1: nothing to authenticate.
+  # No volume@1 / port@1: a content-only mixin holds no state and serves nothing.
+  # No sbx@1 / agent-sessions@1: both are workload-only; a mixin owns no
+  # environment and launches no agent.
+
+  - type: com.docker.sandbox/lifecycle@1
+    config:
+      install:
+        # The kit's "entrypoint": wire the greeting into ~/.bashrc so the
+        # whale appears the moment you enter an interactive shell — no need
+        # to type `whalesay`. This stays a create-time hook (rather than
+        # baking into the overlay) because it *appends* to a file the base
+        # owns: an overlay layer would replace ~/.bashrc wholesale and clobber
+        # the base's. Idempotent (grep guard) and interactive-only (the *i*
+        # guard in greet.sh), so scripted `sbx exec ... whalesay` calls are
+        # never double-greeted. Reads only $HOME (platform baseline), so no
+        # `env:` declaration is needed.
+        - command: >-
+            grep -qF '/usr/local/share/whalesay/greet.sh' "$HOME/.bashrc" 2>/dev/null ||
+            printf '\n# Docker whale greeting (whalesay kit)\n. "/usr/local/share/whalesay/greet.sh"\n' >> "$HOME/.bashrc"
+          user: agent
+          description: Greet with the Docker whale on every interactive shell (the kit's entrypoint)
+
+  - type: com.docker.sandbox/agent-context@1
+    # contentFile only — `filename:` is workload-only, and a mixin that owns
+    # no environment must not set it. The body interpolates no args, so a
+    # staged file (not inline `content:`) is correct.
+    config:
+      contentFile: ./whalesay-context.md

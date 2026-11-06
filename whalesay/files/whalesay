@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# whalesay - make the Docker whale talk.
+msg="$*"
+[ -z "$msg" ] && msg="Happy Whaleness Day"
+exec perl /usr/local/share/whalesay/cowsay -f docker "$msg"
