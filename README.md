@@ -1,4 +1,4 @@
-# Happy Whaleness Day 🐳
+# Happy Whaleness Day 
 
 The classic [`docker/whalesay`](https://hub.docker.com/r/docker/whalesay) whale, packaged as a [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) kit — a [**sandbox-kit v3**](https://github.com/docker/sandbox-kit-spec/blob/main/docs/spec/SPEC-v3.md) mixin (see [`whalesay/`](whalesay/)).
 
